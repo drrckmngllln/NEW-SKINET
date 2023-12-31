@@ -1,0 +1,11 @@
+creating class library
+
+dotnet new classlib -n Core
+
+dotnet new classlib -n Infrastructure
+
+dotnet sln add Core/ **add to the project
+dotnet sln add Infrastructure
+
+dotnet add reference ../Infrastructure  **adding reference
+dotnet restore **to refresh the solution
