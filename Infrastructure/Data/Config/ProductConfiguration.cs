@@ -19,6 +19,7 @@ namespace Infrastructure.Data.Config
             builder.Property(s => s.PictureUrl).IsRequired();
             builder.HasOne(s => s.ProductBrand).WithMany().HasForeignKey(s => s.ProductBrandId);
             builder.HasOne(s => s.ProductType).WithMany().HasForeignKey(s => s.ProductTypeId);
+            
         }
     }
 }

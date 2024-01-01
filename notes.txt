@@ -116,4 +116,383 @@ public async Task<IReadOnlyList<ProductType>> GetProductTypesAsync()
         }
 
 // Eager Loading of navigation properties
+**just adding include on the query of the repositories thats it!!!
 
+// Implementing the methods of generic Repository
+**Add another class into the interface under the core/interface folder which is the:
+IGenericRepository
+
+**here is the Code:
+public interface IGenericRepository<T> where T : BaseEntity
+    {
+        Task<T> GetByIdAsync(int id);
+        Task<IReadOnlyList<T>> ListAllAsync();
+        
+    }
+
+**after that create an implementation class under the Infrastructure/Data folder with a name of
+GenericRepository
+
+**here is the code:
+public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
+    {
+        private readonly StoreContext _context;
+        public GenericRepository(StoreContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<T> GetByIdAsync(int id)
+        {
+            return await _context.Set<T>().FindAsync(id);
+        }
+
+        public async Task<IReadOnlyList<T>> ListAllAsync()
+        {
+            return await _context.Set<T>().ToListAsync();
+        }
+    }
+
+**and after that, you need add scope to the program class with a slightly different code
+**here is the code:
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+**after that go to your controller where the your entities will be called,
+then initialize every single entity from the parameters
+
+**here is the code:
+
+private readonly IGenericRepository<Product> _productsRepo;
+        private readonly IGenericRepository<ProductBrand> _productBrand;
+        private readonly IGenericRepository<ProductType> _productTypeRepo;
+        
+        public ProductsController(IGenericRepository<Product> productsRepo, 
+        IGenericRepository<ProductBrand> productBrand, IGenericRepository<ProductType> productTypeRepo)
+        {
+            _productTypeRepo = productTypeRepo;
+            _productBrand = productBrand;
+            _productsRepo = productsRepo;
+        }
+
+**after that change all the code under your httpget methods
+
+// Creating a specification class
+
+**the purpose of this is to have an include statement in your query
+**first you need to create an interface named ISpecification under tha Core/Specifications folder
+**here is the code:
+public interface ISpecification<T>
+    {
+        Expression<Func<T, bool>> Criteria { get; }
+        List<Expression<Func<T, object>>> Includes { get; }
+    }
+
+**after that you need to create a BaseSpecification class under that Core/Specifications folder
+**here is the code:
+public class BaseSpecification<T> : ISpecification<T>
+
+**and then implement the specification, create a constructor like this:
+public BaseSpecification(Expression<Func<T, bool>> criteria)
+        {
+            Criteria = criteria;
+        }
+
+**and then code the methods like this:
+public Expression<Func<T, bool>> Criteria { get; }
+
+        public List<Expression<Func<T, object>>> Includes { get; } = 
+        new List<Expression<Func<T, object>>>();
+
+        protected void AddInclude(Expression<Func<T, object>> includeExpression)
+        {
+            Includes.Add(includeExpression);
+        }
+
+// Creating a specification evaluator
+
+**Create a class under the Infrastructure/Data folder called SpecificationEvaluator
+**the purpose of this is to add include statement into our GenericRepository Interface
+**here is the code:
+public class SpecificationEvaluator<TEntity>  where TEntity : BaseEntity
+    {
+        public static IQueryable<TEntity> GetQuery(IQueryable<TEntity> inputQuery, 
+        ISpecification<TEntity> spec)
+        {
+            var query = inputQuery;
+
+            if (spec.Criteria != null)
+            {
+                query = query.Where(spec.Criteria);
+            }
+
+            query = spec.Includes.Aggregate(query, (current, include) => current.Include(include));
+            
+            return query;
+        }
+    }
+
+**after that you need to implement the SpecificationEvaluator into the IGenericRepository
+inject it after the coded methods
+**here is the code:
+Task<T> GetEntityWithSpec(ISpecification<T> spec);
+Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec);
+
+// Implementing the Repository with specification methods
+**go to GenericRepository and implement the added interface
+**here is the code:
+public async Task<T> GetEntityWithSpec(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).FirstAsync();
+        }
+
+        public async Task<IReadOnlyList<T>> ListAsync(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).ToListAsync();
+        }
+
+**and implement and IQueryable method after the implementation code
+**here is the code:
+private IQueryable<T> ApplySpecification(ISpecification<T> spec)
+        {
+            return SpecificationEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
+        }
+
+// Using the specification methods in the controller
+**this will implement the added IQueryable code in the GenericRepository
+**first you need to create another class in the Core/Specifications folder with the name
+ProductWithTypesAndBrandsSpecification
+**implement the BaseSpecification class and declare the type T as Product, here is the code:
+public class ProductWithTypesAndBrandsSpecification : BaseSpecification<Product>
+
+**after that create a blank constructor on the BaseSpecification class,
+this will remove the error ProductWithTypesAndBrandsSpecification
+implementing the BaseSpecification Class
+
+**create a constructor on the ProductWithTypesAndBrandsSpecification
+with the code:
+public ProductWithTypesAndBrandsSpecification()
+        {
+            AddInclude(x => x.ProductType);
+            AddInclude(x => x.ProductBrand);
+        }
+
+**go to ProductsController and on the method declare the ProductWithTypesAndBrandsSpecification
+
+**here is the code:
+
+public async Task<ActionResult<List<Product>>> GetProducts()
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification();
+            
+            var products = await _productsRepo.ListAsync(spec);
+            return Ok(products);
+        }
+// Getting a single product with specification
+
+**Generate the constructor with criteria into the ProductWithTypesAndBrandsSpecification
+
+**here is the code:
+
+public ProductWithTypesAndBrandsSpecification(int id) : 
+        base(x => x.Id == id)
+        {
+            AddInclude(x => x.ProductType);
+            AddInclude(x => x.ProductBrand);
+        }
+
+**implement it on the single query method on the ProductsController
+
+**declare the class with the name spec and replace the return await with GetEntityWithSpec and GetProductTypesAsync
+it with spec here is the sample code:
+
+[HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetProduct(int id)
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification(id);
+
+            return await _productsRepo.GetEntityWithSpec(spec);
+        }
+
+// Shaping the data to return with DTOs
+**in this lesson we will flatten the return data from the api so that the frontend can
+read the data more specifically
+
+**create an object that we can use to return the data on the format that we wanted
+
+**Create a class under the API/Dtos folder with the name ProductToReturnDto
+
+**Copy the details of Product entity to the DTO
+here is the code:
+
+public class ProductToReturnDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public decimal Price { get; set; }
+        public string PictureUrl { get; set; }
+        public string ProductType { get; set; }
+        public string ProductBrand { get; set; }
+    }
+
+**after that you can call it in the ProductsController
+
+**here is the code:
+
+        [HttpGet]
+        public async Task<ActionResult<List<ProductToReturnDto>>> GetProducts()
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification();
+            
+            var products = await _productsRepo.ListAsync(spec);
+            return products.Select(product => new ProductToReturnDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                PictureUrl = product.PictureUrl,
+                Price = product.Price,
+                ProductBrand = product.ProductBrand.Name,
+                ProductType = product.ProductType.Name
+            }).ToList();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification(id);
+
+            var product = await _productsRepo.GetEntityWithSpec(spec);
+            return new ProductToReturnDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                PictureUrl = product.PictureUrl,
+                Price = product.Price,
+                ProductBrand = product.ProductBrand.Name,
+                ProductType = product.ProductType.Name
+            };
+        }
+
+// Adding Auto Mapper to the project
+
+**the purpose of this is to return DTO better
+
+**install the tool in the nuget gallery: AutoMapper.Extensions.Microsoft.DependencyInjection
+
+**create a new class under the API/Helpers with the name MappingProfiles
+
+**create a blank constructor with the code:
+
+public MappingProfiles()
+    {
+        CreateMap<Product, ProductToReturnDto>();
+    }
+
+**crate a service under the Program class with the code:
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+**go to the ProductsController and apply the AutoMapper
+
+**add mapper to the constructor: IMapper mapper
+**initialize field from parameter
+
+**apply the mapper with the code:
+
+[HttpGet("{id}")]
+        public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification(id);
+
+            var product = await _productsRepo.GetEntityWithSpec(spec);
+            return _mapper.Map<Product, ProductToReturnDto>(product);
+        }
+
+// Configuring AutoMapper profiles
+
+**the purpose of this is to fix the strange result in postman
+
+**add additional parameters to the MappingProfiles class with the code:
+
+public MappingProfiles()
+        {
+            CreateMap<Product, ProductToReturnDto>()
+            .ForMember(d => d.ProductBrand, o => o.MapFrom(s => s.ProductBrand.Name))
+            .ForMember(d => d.ProductType, o => o.MapFrom(s => s.ProductType.Name));
+        }
+
+**return to the ProductsController and modify your code:
+
+[HttpGet]
+        public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification();
+            
+            var products = await _productsRepo.ListAsync(spec);
+            return Ok(_mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification(id);
+
+            var product = await _productsRepo.GetEntityWithSpec(spec);
+            return _mapper.Map<Product, ProductToReturnDto>(product);
+        }
+
+// Adding a custom value resolver for AutoMapper
+
+**go to appsettings.Development.json and add another property URL:
+"ApiUrl": "https://localhost:5001/"
+
+**add another class under the API/Helpers with the name ProductUrlResolver
+
+**here is the code:
+
+public class ProductUrlResolver : IValueResolver<Product, ProductToReturnDto, string>
+    {
+        private readonly IConfiguration _config;
+        public ProductUrlResolver(IConfiguration config)
+        {
+            _config = config;
+        }
+
+        public string Resolve(Product source, ProductToReturnDto destination, string destMember, ResolutionContext context)
+        {
+            if (!string.IsNullOrEmpty(source.PictureUrl))
+            {
+                return _config["ApiUrl"] + source.PictureUrl;
+            }
+
+            return null;
+        }
+    }
+
+**go to mapping profiles and add third configuration
+
+**here is the code:
+
+public class MappingProfiles : Profile
+    {
+        public MappingProfiles()
+        {
+            CreateMap<Product, ProductToReturnDto>()
+            .ForMember(d => d.ProductBrand, o => o.MapFrom(s => s.ProductBrand.Name))
+            .ForMember(d => d.ProductType, o => o.MapFrom(s => s.ProductType.Name))
+            .ForMember(d => d.PictureUrl, o => o.MapFrom<ProductUrlResolver>());
+        }
+    }
+
+// Serving static content from the API
+
+**create a folder under the API with the name wwwroot and paste the image from the Student Assets
+just copy the image folder
+
+**serve static content go to program class
+
+**this is the code:
+
+app.UseStaticFiles();
