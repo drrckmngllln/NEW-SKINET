@@ -9,3 +9,111 @@ dotnet sln add Infrastructure
 
 dotnet add reference ../Infrastructure  **adding reference
 dotnet restore **to refresh the solution
+
+// Repository
+-after creating a controller, you need to create an interface of the task of the controllers
+-after creating the task, you need to create a class for this interface
+-in order to implement this interface you need to inject code into the
+program class
+-call the interface into the controller
+
+// Droping the database
+dotnet ef database drop -p Infrastructure -s API
+
+// Removing migrations
+dotnet ef migrations remove -p Infrastructure -s API
+
+// Generate migrations
+dotnet ef migrations add InitialCreate -p Infrastructure -s API -o Data/Migrations
+
+-after adding migrations, you need to have a config class to control the data type of the entities
+-create another class in the config folder under Infrastructure/Data
+-use IEntityTypeConfiguration<> to configure the entities
+-after configuring the entities override the migrations into the storecontext
+
+// Applying the migrations and creating the database at app startup
+** here is the code
+using var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
+var context = services.GetRequiredService<StoreContext>();
+var logger = services.GetRequiredService<ILogger<Program>>();
+try
+{
+    await context.Database.MigrateAsync();
+}
+catch (Exception ex)
+{
+    logger.LogError(ex, "An error occured during migration");
+}
+
+// adding seed data
+-create a class called StoreContextSeed in the Infrastructure/Data folder
+** this is the code
+public static async Task SeedAsync(StoreContext context)
+        {
+            if(!context.ProductBrands.Any())
+            {
+                var brandsData = File.ReadAllText("../Infrastructure/Data/SeedData/brands.json");
+                var brands = JsonSerializer.Deserialize<List<ProductBrand>>(brandsData);
+                context.ProductBrands.AddRange(brands);
+            }
+
+            if(!context.ProductTypes.Any())
+            {
+                var typesData = File.ReadAllText("../Infrastructure/Data/SeedData/types.json");
+                var types = JsonSerializer.Deserialize<List<ProductType>>(typesData);
+                context.ProductTypes.AddRange(types);
+            }
+
+            if(!context.Products.Any())
+            {
+                var productsData = File.ReadAllText("../Infrastructure/Data/SeedData/products.json");
+                var products = JsonSerializer.Deserialize<List<Product>>(productsData);
+                context.Products.AddRange(products);
+            }
+
+            if (context.ChangeTracker.HasChanges()) await context.SaveChangesAsync();
+        }
+
+** then add this code to the program class under the try catch block just paste it after the code in the
+try catch block
+await StoreContextSeed.SeedAsync(context);
+
+**take note before you write this code there will be nullable error
+
+// Adding the code to get the product brands and types
+**just add more parameters in the IProductRepository here is the code
+
+Task<IReadOnlyList<ProductBrand>> GetProductBrandsAsync();
+Task<IReadOnlyList<ProductType>> GetProductTypesAsync();
+
+**after that implement the interface into the productrepository
+then add another block of code in the products controller,
+here is the code:
+
+**into the products Repository
+
+public async Task<IReadOnlyList<ProductBrand>> GetProductBrandsAsync()
+        {
+            return await _context.ProductBrands.ToListAsync();
+        }
+public async Task<IReadOnlyList<ProductType>> GetProductTypesAsync()
+        {
+            return await _context.ProductTypes.ToListAsync();
+        }
+
+**into the controller
+ [HttpGet("brands")]
+        public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
+        {
+            return Ok(await _repo.GetProductBrandsAsync());
+        }
+
+        [HttpGet("types")]
+        public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
+        {
+            return Ok(await _repo.GetProductTypesAsync());
+        }
+
+// Eager Loading of navigation properties
+
