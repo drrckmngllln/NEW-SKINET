@@ -760,3 +760,340 @@ texts
 **go to program class and call the ApplicationServicesExtensions with a code:
 
 builder.Services.AddApplicationServices(builder.Configuration);
+
+// Adding a sorting specification class **this is the most important part on performance wise
+
+**add another expression in the ISpecification interface:
+
+Expression<Func<T, object>> OrderBy { get; }
+Expression<Func<T, object>> OrderByDescending { get; }
+
+**go to BaseSpecification class and implement the additional interface
+
+**here is the code:
+
+public Expression<Func<T, object>> OrderBy { get; private set;}
+
+public Expression<Func<T, object>> OrderByDescending { get; private set;}
+
+**add another protected void method:
+
+protected void AddOrderBy(Expression<Func<T, object>> orderByExpression)
+    {
+        OrderBy = orderByExpression;
+    }
+
+protected void AddOrderByDescending(Expression<Func<T, object>> orderByDescExpression)
+    {
+        OrderByDescending = orderByDescExpression;
+    }
+
+**go to SpecificationEvaluator and add another if statement for OrderBy and OrderByDescending method:
+
+if (spec.OrderBy != null)
+    {
+        query = query.OrderBy(spec.OrderBy);
+    }
+
+if (spec.OrderByDescending != null)
+    {
+        query = query.OrderByDescending(spec.OrderByDescending);
+    }
+
+**go to ProductsController and under the httpget method add a string sort on the method:
+
+public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(string sort)
+
+**and pass it on the spec variable:
+
+var spec = new ProductWithTypesAndBrandsSpecification(sort);
+
+// Adding a sorting specification part 2
+
+**go to the ProductWithTypesAndBrandsSpecification and add a string sort:
+
+public ProductWithTypesAndBrandsSpecification(string sort)
+
+**after that include the added function from the SpecificationEvaluator:
+
+AddOrderBy(x => x.Name);
+
+**in order to have a categorized sort you need to add a switch statement
+
+**first you need to check if the sort string is not null:
+ if (!string.IsNullOrEmpty(sort))
+
+**after that add a switch statement under the if statement:
+
+ switch (sort)
+    {
+        case "priceAsc":
+        AddOrderBy(p => p.Price);
+        break;
+
+        case "priceDesc":
+        AddOrderByDescending(p => p.Price);
+        break;
+
+        default:
+        AddOrderBy(n => n.Name);
+        break;
+    }
+
+// Working around the decimal problem in sqlite
+
+**go to StoreContext class and add a code into the protected override method:
+
+if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+                {
+                    var properties = entityType.ClrType.GetProperties()
+                    .Where(p => p.PropertyType == typeof(decimal));
+
+                    foreach (var property in properties)
+                    {
+                        modelBuilder.Entity(entityType.Name).Property(property.Name)
+                        .HasConversion<double>();
+                    }
+                }
+            }
+
+// Adding filtering functionality
+
+**this task will filter the product brand and product type of the products
+
+**first you need to add some additional parameters to the method:
+
+public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(string sort, int? brandId, int? typeId)
+
+**then add it to the parameters to the spec variable:
+
+var spec = new ProductWithTypesAndBrandsSpecification(sort, brandId, typeId);
+
+**after that go to ProductWithTypesAndBrandsSpecification to also add some additional parameters to the method,
+and add a base value:
+
+public ProductWithTypesAndBrandsSpecification(string sort, int? brandId, int? typeId)
+        : base(x => 
+            (!brandId.HasValue || x.ProductBrandId == brandId) &&
+            (!typeId.HasValue || x.ProductTypeId == typeId)
+
+
+// Adding pagination **this is also very important performance wise
+
+**go to ISpecification class and add additional lines for the pagination functionality:
+
+int Take { get; }
+int Skip { get; }
+bool IsPagingEnabled { get; }
+
+**after that proceed to the BaseSpecification class to implement this additional parameters:
+
+ public int Take { get; private set;}
+
+public int Skip { get; private set;}
+
+public bool IsPagingEnabled { get; private set;}
+
+**after that add additional protected void method on pagination:
+
+protected void ApplyPaging(int skip, int take)
+    {
+        Skip = skip;
+        Take = take;
+        IsPagingEnabled = true;
+    }
+
+**after that proceed to SpecificationEvaluator to identify the query whether the paging is enabled:
+
+if (spec.IsPagingEnabled)
+    {
+        query = query.Skip(spec.Skip).Take(spec.Take);
+    }
+
+// Adding pagination part 2
+
+**create a class to store parameters
+
+**create a class under the Core/Specifications folder called ProductSpecParams
+
+**here is the code:
+
+public class ProductSpecParams
+    {
+        private const int MaxPageSize = 50;
+        public int PageIndex { get; set; } = 1;
+        private int _pageSize = 6;
+        public int PageSize
+        {
+            get => _pageSize;
+            set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+        }
+        public int? BrandId { get; set; }
+        public int? TypeId { get; set; }
+        public string sort { get; set; }
+    }
+}
+
+**go to ProductsController replace the parameter in the [HttpGet] with:
+
+public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts(ProductSpecParams productParams)
+
+**also the spec variable:
+
+var spec = new ProductWithTypesAndBrandsSpecification(productParams);
+
+**then go to ProductWithTypesAndBrandsSpecification and replace the parameters:
+
+public ProductWithTypesAndBrandsSpecification(ProductSpecParams productParams)
+    : base(x => 
+        (!productParams.BrandId.HasValue || x.ProductBrandId == productParams.BrandId) &&
+        (!productParams.TypeId.HasValue || x.ProductTypeId == productParams.TypeId)
+    )
+
+**change the errors to the parameters:
+
+{
+    AddInclude(x => x.ProductType);
+    AddInclude(x => x.ProductBrand);
+    AddOrderBy(x => x.Name);
+
+    if (!string.IsNullOrEmpty(productParams.sort))
+    {
+        switch (productParams.sort)
+        {
+            case "priceAsc":
+                AddOrderBy(p => p.Price);
+                break;
+
+            case "priceDesc":
+                AddOrderByDescending(p => p.Price);
+                break;
+
+            default:
+                AddOrderBy(n => n.Name);
+                break;
+        }
+    }
+}
+
+public ProductWithTypesAndBrandsSpecification(int id) :
+base(x => x.Id == id)
+{
+    AddInclude(x => x.ProductType);
+    AddInclude(x => x.ProductBrand);
+}
+
+**then we need to tell api to look for the properties into the query:
+**add [FromQuery] before the parameter:
+
+public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts([FromQuery]ProductSpecParams productParams)
+
+**add ApplyPaging to the ProductWithTypesAndBrandsSpecification method after the AddOrderBy method:
+
+ApplyPaging(productParams.PageSize * (productParams.PageIndex - 1), productParams.PageSize);
+
+// Adding Pagination part 3
+
+**create a class under the API/Helpers folder called Pagination and make it a generic class:
+
+public class Pagination<T> where T : class
+    {
+        public int PageIndex { get; set; }
+        public int PageSize { get; set; }
+        public int Count { get; set; }
+        public IReadOnlyList<T> Data { get; set; }
+    }
+
+**go to IGenericRepository and add another interface:
+
+Task<int> CountAsync(ISpecification<T> spec);
+
+**implement this to the GenericRepository:
+
+public async Task<int> CountAsync(ISpecification<T> spec)
+    {
+        return await ApplySpecification(spec).CountAsync();
+    }
+
+**create another class under Core/Specifications called ProductWithFiltersForCountSpecification
+
+public class ProductWithFiltersForCountSpecification : BaseSpecification<Product>
+    {
+        public ProductWithFiltersForCountSpecification(ProductSpecParams productParams)
+        : base(x => 
+            (!productParams.BrandId.HasValue || x.ProductBrandId == productParams.BrandId) &&
+            (!productParams.TypeId.HasValue || x.ProductTypeId == productParams.TypeId)
+        )
+        {
+        }
+    }
+
+**go to ProductsController to add these parameters:
+
+ public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts([FromQuery]ProductSpecParams productParams)
+        {
+            var spec = new ProductWithTypesAndBrandsSpecification(productParams);
+
+            var countSpec = new ProductWithFiltersForCountSpecification(productParams);
+
+            var totalItems = await _productsRepo.CountAsync(countSpec);
+
+            var products = await _productsRepo.ListAsync(spec);
+            
+            var data = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
+            
+            return Ok(new Pagination<ProductToReturnDto>(productParams.PageIndex, productParams.PageSize, totalItems, data));
+        }
+
+**make sure to create a constructor on the Pagination class:
+
+public Pagination(int pageIndex, int pageSize, int count, IReadOnlyList<T> data)
+        {
+            Data = data;
+            Count = count;
+            PageSize = pageSize;
+            PageIndex = pageIndex;
+        }
+
+        public int PageIndex { get; set; }
+        public int PageSize { get; set; }
+        public int Count { get; set; }
+        public IReadOnlyList<T> Data { get; set; }
+
+// Adding a search functionality
+
+**go to ProductSpecParams add another field:
+
+private string _search;
+        public string Search
+        {
+            get => _search;
+            set => _search = value.ToLower();
+        }
+
+**go to ProductWithTypesAndBrandsSpecification and another base parameter:
+
+(string.IsNullOrEmpty(productParams.Search) || x.Name.ToLower().Contains(productParams.Search)) &&
+
+**also go to ProductWithFiltersForCountSpecification and add another base to the parameter:
+
+(string.IsNullOrEmpty(productParams.Search) || x.Name.ToLower().Contains(productParams.Search)) &&
+
+
+// Adding CORS Support to the API
+
+**go to ApplicationServicesExtensions under the API/Extensions:
+
+ services.AddCors(opt =>
+    {
+        opt.AddPolicy("CorsPolicy", policy =>
+        {
+            policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200");
+        });
+    });
+
+**after that go to program class to add cors functionality:
+
+
