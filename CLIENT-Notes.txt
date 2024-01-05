@@ -1,0 +1,47 @@
+// Developer Environment for Angular
+
+**nodeJs version 18.10 for Angular 15
+
+**to check for version: node --version
+
+**to install Angular 15: npm install -g @angular/cli@15
+
+// Creating the angular project
+
+**to create a new project in angular: ng new client
+
+**to serve the project: ng serve
+
+// Setting up angular to use https
+
+**use mkcert, search mkcert in google and install it into your system
+
+**go to your client directory in the terminal: mkcert -install
+
+**create a folder using cli called ssl: mkdir ssl
+
+**navigate to that folder: cd ssl
+
+**and then type: mkcert localhost
+
+**go to angular.json to configure
+
+**look for the serve and after builder insert this code:
+
+"options": {
+    "sslCert": "ssl/localhost.pem",
+    "sslKey": "ssl/localhost-key.pem",
+    "ssl": true
+    }
+
+**restart the server
+
+// Adding bootstrap and font-awesome
+
+**make sure your into your client folder
+
+**using cli: ng add ngx-bootstrap
+
+**add to angular.json
+
+**under the architect insert the stylesheet components below styles
