@@ -45,3 +45,142 @@
 **add to angular.json
 
 **under the architect insert the stylesheet components below styles
+
+"styles": [
+        "node_modules/bootstrap/dist/css/bootstrap.min.css",
+        "node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+        "src/styles.scss"
+    ]
+
+**since this is not working we will leave the setup in the styles.scss
+
+**install font-awesome: npm install font-awesome
+
+// Adding VS Code extensions for angular
+
+-Angular Language Service
+
+// Adding a navbar component
+
+**to see a dry run: ng g c nav-bar --dry-run
+
+**cli: ng g c nav-bar --skip-tests
+
+// Adding the navbar html code
+
+**go to nav-bar.component.html:
+
+<header class="d-flex flex-row align-items-center justify-content-between p-3 px-4 mb-3 bg-white border-bottom fixed-top shadow-sm">
+
+    <img src="/asset/images/logo.png" alt="logo" style="max-height: 70px;">
+
+      <nav class="my-2 ">
+        <a class="p-2 text-dark text-decoration-none" href="#">Features</a>
+        <a class="p-2 text-dark text-decoration-none" href="#">Enterprise</a>
+        <a class="p-2 text-dark text-decoration-none" href="#">Support</a>
+        <a class="p-2 text-dark text-decoration-none" href="#">Pricing</a>
+      </nav>
+
+      <div class="d-flex align-items-center">
+        <a>
+            <i class="fa fa-shopping-cart fa-2x me-5 text-dark"></i>
+            <div class="cart-no">5</div>
+        </a>
+
+        <a href="" class="btn btn-outline-secondary me-2">Login</a>
+        <a href="" class="btn btn-outline-secondary me-2">Sign up</a>
+      </div>
+
+</header>
+
+// Styling the nav bar
+
+**go to nav-bar.components.scss:
+
+.cart-no{
+    position: absolute;
+    min-height: 25px;
+    min-width: 25px;
+    border-radius: 50%;
+    background: blue;
+    color: white;
+    text-align: center;
+    top: -12px;
+    right: 32px;
+}
+
+**update the nav-bar.component.html:
+
+<header class="d-flex flex-row align-items-center justify-content-between p-3 px-4 mb-3 bg-white border-bottom fixed-top shadow-sm">
+
+    <img src="/assets/images/logo.png" alt="logo" style="max-height: 70px;">
+
+      <nav class="my-2 text-uppercase fs-4">
+        <a class="p-2 text-dark text-decoration-none" href="#">Home</a>
+        <a class="p-2 text-dark text-decoration-none" href="#">Shop</a>
+        <a class="p-2 text-dark text-decoration-none" href="#">Contact</a>
+      </nav>
+
+      <div class="d-flex align-items-center">
+        <a class="position-relative">
+            <i class="fa fa-shopping-cart fa-2x me-5 text-dark"></i>
+            <div class="cart-no">5</div>
+        </a>
+
+        <a href="" class="btn btn-outline-secondary me-2">Login</a>
+        <a href="" class="btn btn-outline-secondary me-2">Sign up</a>
+      </div>
+
+</header>
+
+// Intro to the Http client module
+
+**import the HttpCLientModule to app.module.ts
+
+**go to imports and then to the imports array inser this:
+
+HttpCLientModule
+
+**then go to the imports and add this:
+
+import {HttpClientModule} from '@angular/common/http';
+
+**go to app.component.ts
+
+**first create a constructor:
+
+constructor(private http: HttpClient) { }
+
+**after that implement it OnInit:
+
+export class AppComponent implements OnInit 
+
+**under the oninit method fetch the data from the api:
+
+ngOnInit(): void {
+    this.http.get('https://localhost:5001/api/products?pageSize=40').subscribe({
+      next: (response: any) => this.products = response.data,
+      error: error => console.log(error),
+      complete: () => {
+        console.log('request completed');
+        console.log('extra statement');
+      }
+    })
+  }
+
+**the go to app.component html and try to load the data in the frontend:
+
+<app-nav-bar></app-nav-bar>
+
+<div class="container" style="margin-top: 140px;">
+    <h1>Welcome to Skinet</h1>
+    <ul>
+        <li class="list-unstyled" *ngFor="let product of products">
+            {{ product.name }}
+        </li>
+    </ul>
+</div>
+
+// Creating a products interface
+
+**create a new file under the models folder called products
