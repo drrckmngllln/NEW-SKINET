@@ -184,3 +184,721 @@ ngOnInit(): void {
 // Creating a products interface
 
 **create a new file under the models folder called products
+
+**go to postman and convert the json file of the result in the products
+
+**google json to ts
+
+**paste it into the product.ts file:
+
+export interface Product {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    pictureUrl: string;
+    productType: string;
+    productBrand: string;
+}
+
+** create another file called pagination.ts and paste the pagination interface
+
+** make the pagination generic by adding parameter in the interface:
+
+export interface Pagination<T> {
+    pageIndex: number;
+    pageSize: number;
+    count: number;
+    data: T;
+}
+
+** take note that in the data array do not add brackets in order not to duplicate the code when fetching the data to the app.component.ts
+
+** go to app.component.ts to add some parameters in the get method:
+
+this.http.get<Pagination<Product[]>>('https://localhost:5001/api/products?pageSize=40').subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error),
+      complete: () => {
+        console.log('request completed');
+        console.log('extra statement');
+      }
+    })
+
+**notice that when you go to the app.component.html it already has a type safety functionality
+
+// Organizing our files and folders
+
+** go to terminal and make sure you are on the client folder:
+
+ng g m core
+ng g m shared
+ng g m shop
+
+**move the nav-bar folder into the core folder
+
+**go to core.module.ts and import the NavBarComponent
+
+**remove the NavBarComponent from the app.module.ts and replace it with CoreModule
+
+**after replacing, export the NavBarComponent to the core.module.ts
+
+**move the models into the shared folder, no configurations needed because no component has exist
+
+go to cli:
+
+ng g c shop/shop --flat --skip-tests
+
+ng g s shop/Shop
+
+ng g m shop/shop-routing --flat
+
+**the shop.service.ts will be the one to use when calling our api this is the code:
+
+export class ShopService {
+  baseUrl = 'https://localhost:5001/api/'
+
+  constructor(private http: HttpClient) { }
+
+  getProducts() {
+    return this.http.get<Pagination<Product[]>>(this.baseUrl + 'products?pageSize=50');
+  }
+}
+
+**go to shop.component.ts and call the service from there:
+
+export class ShopComponent implements OnInit {
+  products: Product[] = [];
+
+  constructor(private shopService: ShopService) { }
+
+  ngOnInit(): void {
+    this.shopService.getProducts().subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+
+**go to app.component.ts to remove all the functionality of the products fetching
+
+**go to app.component.html to transfer the fetching of the products to the shop.component.html
+
+**in order to identify the app-shop component in the html, to to the app.module.ts to import the ShopModule
+
+**after that go to the shop.module.ts to export the module: ShopModule
+
+**go to shop.components.html and call the <app-shop> functionality
+
+// Designing the shop page
+
+**here is the code:
+
+<div class="container">
+    <div class="row">
+        <section class="col-3">
+
+            <h5 class="text-warning ms-3">Sort</h5>
+            <select class="form-select mb-4">
+                <option selected>Alphabetical</option>
+                <option>Price Low to High</option>
+                <option>Price High to Low</option>
+            </select>
+
+            <h5 class="text-warning ms-3">Brands</h5>
+            <ul class="list-group my-3">
+                <li class="list-group-item active">An active item</li>
+                <li class="list-group-item">A second item</li>
+                <li class="list-group-item">A third item</li>
+                <li class="list-group-item">A fourth item</li>
+                <li class="list-group-item">And a fifth one</li>
+            </ul>
+            <h5 class="text-warning ms-3">Types</h5>
+            <ul class="list-group my-3">
+                <li class="list-group-item active">An active item</li>
+                <li class="list-group-item">A second item</li>
+                <li class="list-group-item">A third item</li>
+                <li class="list-group-item">A fourth item</li>
+                <li class="list-group-item">And a fifth one</li>
+            </ul>
+        </section>
+        <section class="col-9">
+            <div class="d-flex justify-content-between align-items-center pb-2">
+                <header>
+                    <span>Showing <strong>10</strong> of <strong>15</strong> Results</span>
+                </header>
+                <div class="d-flex mt-2">
+                    <input type="search" class="form-control me-2">
+                    <button class="btn btn-outline-primary mx-1">Search</button>
+                    <button class="btn btn-outline-success mx-1">Reset</button>
+                </div>
+            </div>
+
+            <div class="row row-cols-3 g-3">
+                <div class="card shadow-sm">
+                    <svg class="bd-placeholder-img card-img-top" width="100%" height="225"
+                        xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail"
+                        preserveAspectRatio="xMidYMid slice" focusable="false">
+                        <title>Placeholder</title>
+                        <rect width="100%" height="100%" fill="#55595c"></rect><text x="50%" y="50%" fill="#eceeef"
+                            dy=".3em">Thumbnail</text>
+                    </svg>
+                    <div class="card-body">
+                        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to
+                            additional content. This content is a little bit longer.</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                            </div>
+                            <small class="text-body-secondary">9 mins</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+// Adding a child component for the product items
+
+** create a new component product-item: ng g c shop/product-item --skip-tests
+
+**cut the component of the product item before the div: <div class="row row-cols-3 g-3">
+
+**paste it into the product-item.component.html
+
+**go to shop.component.ts, create a div: with a class of col and then add for loop to the div:
+
+<div class="col" *ngFor="let product of products">
+
+**after that call <app-product-item>
+
+
+// Passing down data to child components
+
+**if we want to put data into the product-item we need to go to product-item.component.ts
+
+**and inject an @input() property:  @Input() product?: Product;
+
+**make sure you put a question mark to make this optional
+
+**inside the <app-product-item> pass on the product put the value for the for loop: <app-product-item [product]="product"></app-product-item>
+
+**style the product item and pull-out all the products:
+
+<div class="card shadow-sm h-100" *ngIf="product">
+    
+    <img src="{{ product.pictureUrl }}" alt="{{ product.name }}" class="img-fluid bg-info">
+    <div class="card-body d-flex flex-column">
+        <a href="" class="tex-decoration-none">
+            <h6 class="text-uppercase">
+                {{ product.name }}
+            </h6>
+        </a>
+        <span class="mb-2">{{ product.price | currency }}</span>
+        <div class="btn-group mt-auto">
+            <button class="btn btn-outline-secondary me-2"><i class="fa fa-shopping-cart"></i></button>
+            <button class="btn btn-outline-secondary">View</button>
+
+        </div>
+    </div>
+</div>
+
+// Adding the product filters
+
+**create some types for the brands and types
+
+**under the shared/models folder create files called: brand.ts type.ts:
+
+export interface Brand {
+    id: number;
+    name: string;
+}
+
+export interface Type {
+    id: number;
+    name: string;
+}
+
+**go to shop service and create methods:
+
+ getBrands() {
+    return this.http.get<Brand[]>(this.baseUrl + 'products/brands');
+  }
+
+  getTypes() {
+    return this.http.get<Type[]>(this.baseUrl + 'products/types');
+  }
+
+**go to shop component next
+
+**create another variable and initialize it to type array:
+
+brands: Brand[] = [];
+types: Type[] = [];
+
+**create another 2 methods for brands and types but tidy up the products:
+
+getProducts() {
+    this.shopService.getProducts().subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+
+  getBrands() {
+    this.shopService.getBrands().subscribe({
+      next: response => this.brands = response,
+      error: error => console.log(error)
+    })
+  }
+
+  getTypes() {
+    this.shopService.getTypes().subscribe({
+      next: response => this.types = response,
+      error: error => console.log(error)
+    })
+  }
+
+**then call it to the oninit method:
+
+**go to shop-component.html and then call the methods by using for loop into the div:
+
+ <h5 class="text-warning ms-3">Brands</h5>
+    <ul class="list-group my-3">
+        <li class="list-group-item" *ngFor="let brand of brands">{{ brand.name }}</li>
+        
+    </ul>
+    <h5 class="text-warning ms-3">Types</h5>
+    <ul class="list-group my-3">
+        <li class="list-group-item "*ngFor="let type of types">{{ type.name }}</li>
+        
+    </ul>
+
+// Adding the filter functionality
+
+**go to shop.service.ts
+
+**inside the getProducts:
+
+getProducts(brandId?: number, typeId?: number) {
+    let params = new HttpParams();
+
+    if (brandId) params = params.append('brandId', brandId);
+    if (typeId) params = params.append('typeId', typeId);
+
+    return this.http.get<Pagination<Product[]>>(this.baseUrl + 'products', {params});
+  }
+
+**go to shop.component.ts and declare property:
+
+brandIdSelected = 0;
+typeIdSelected = 0;
+
+**configure getBrands and getTypes:
+
+getBrands() {
+    this.shopService.getBrands().subscribe({
+      next: response => this.brands = [{id: 0, name: 'All'}, ...response],
+      error: error => console.log(error)
+    })
+  }
+
+  getTypes() {
+    this.shopService.getTypes().subscribe({
+      next: response => this.types = [{id: 0, name: 'All'}, ...response],
+      error: error => console.log(error)
+    })
+  }
+
+**create 2 additional methods:
+
+onBrandsSelected(brandId: number){
+    this.brandIdSelected = brandId;
+    this.getProducts();
+  }
+
+  onTypeSelected(typeId: number){
+    this.typeIdSelected = typeId;
+    this.getProducts();
+  }
+
+then configure the getProducts:
+
+getProducts() {
+    this.shopService.getProducts(this.brandIdSelected, this.typeIdSelected).subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+
+// Hooking up the filter to the html
+
+**go to shop.component.html add this codes:
+
+<ul class="list-group my-3">
+        <li class="list-group-item" *ngFor="let brand of brands"
+        [class.active] = "brand.id === brandIdSelected"
+        [value] = "brand.id"
+        (click) = "onBrandsSelected(brand.id)"
+        >
+            {{ brand.name }}
+        </li>
+
+    </ul>
+    <h5 class="text-warning ms-3">Types</h5>
+    <ul class="list-group my-3">
+        <li class="list-group-item " *ngFor="let type of types"
+        [class.active] = "type.id === typeIdSelected"
+        [value] = "type.id"
+        (click) = "onTypeSelected(type.id)">
+            {{ type.name }}
+        </li>
+
+    </ul>
+
+// Adding sort functionality
+
+**go to shop.component.ts and declare 2 other property:
+
+sortSelected = 'name';
+  sortOptions = [
+    { name: 'Alphabetical', value: 'name' },
+    { name: 'Price: Low to High', value: 'priceAsc' },
+    { name: 'Price: High to Low', value: 'priceDesc' }
+  ]
+
+**add another method that will going to handle the event:
+
+onSortSelected(event: any) {
+    this.sortSelected = event.target.value;
+    this.getProducts();
+  }
+
+**go to getProducts and add another parameter:
+
+getProducts() {
+    this.shopService.getProducts(this.brandIdSelected, this.typeIdSelected, this.sortSelected).subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+
+**go to shop.service.ts and add parameter to the getProducts:
+
+getProducts(brandId?: number, typeId?: number, sort?: string) {
+    let params = new HttpParams();
+
+    if (brandId) params = params.append('brandId', brandId);
+    if (typeId) params = params.append('typeId', typeId);
+    if (sort) params = params.append('sort', sort);
+
+
+    return this.http.get<Pagination<Product[]>>(this.baseUrl + 'products', {params});
+  }
+
+**then go to shop.component.html and apply the functionality:
+
+<h5 class="text-warning ms-3">Sort</h5>
+            <select class="form-select mb-4" (change)="onSortSelected($event)">
+                <option selected *ngFor="let sort of sortOptions" [value]="sort.value">{{ sort.name }}
+                </option>
+
+            </select>
+
+**dont forget to add $ sign on the event
+
+// Adding the pagination functionality
+
+**go to shared module and paste the import we got from ngx-bootstrap:
+
+import { PaginationModule } from 'ngx-bootstrap/pagination';
+
+**import the module:
+
+PaginationModule.forRoot()
+
+**then export it also:
+
+exports: [
+    PaginationModule
+  ]
+
+**then go to shop module and import the SharedModule:
+
+ SharedModule
+
+**we dont need to export because it is used inside the module
+
+**go to ngx bootstrap and add copy and paste the pagination template to the shop.component.html:
+
+<div class="d-flex justify-content-center">
+    <pagination 
+        [boundaryLinks]="true" 
+        [totalItems]="77" 
+        previousText="&lsaquo;" 
+        nextText="&rsaquo;"
+        firstText="&laquo;" 
+        lastText="&raquo;">
+    </pagination>
+</div>
+
+// Adding the pagination functionality part 2
+
+**go to models folder and add another file called: shopParams.ts:
+
+export class ShopParams {
+    brandId = 0;
+    typeId = 0;
+    sort = 'name';
+    pageNumber = 1;
+    pageSize = 6;
+}
+
+**go to shop.service.ts and implement the class to the parameters of getProducts:
+
+getProducts(shopParams: ShopParams) {
+    let params = new HttpParams();
+
+    if (shopParams.brandId > 0) params = params.append('brandId', shopParams.brandId);
+    if (shopParams.typeId > 0) params = params.append('typeId', shopParams.typeId);
+    params = params.append('sort', shopParams.sort);
+
+
+    return this.http.get<Pagination<Product[]>>(this.baseUrl + 'products', {params});
+  }
+
+**go to shop.component.ts and replace the 3 property for the getProducts to shopParams:
+
+shopParams = new ShopParams();
+
+**implement it inside the methods:
+
+getProducts() {
+    this.shopService.getProducts(this.shopParams).subscribe({
+      next: response => this.products = response.data,
+      error: error => console.log(error)
+    })
+  }
+
+onBrandsSelected(brandId: number) {
+    this.shopParams.brandId = brandId;
+    this.getProducts();
+  }
+
+onTypeSelected(typeId: number) {
+    this.shopParams.typeId = typeId;
+    this.getProducts();
+}
+
+onSortSelected(event: any) {
+    this.shopParams.sort = event.target.value;
+    this.getProducts();
+}
+
+**go to the shop.component.html and configure the errors:
+
+<h5 class="text-warning ms-3">Brands</h5>
+<ul class="list-group my-3">
+    <li class="list-group-item" *ngFor="let brand of brands" [class.active]="brand.id === shopParams.brandId"
+        [value]="brand.id" (click)="onBrandsSelected(brand.id)">
+        {{ brand.name }}
+    </li>
+
+</ul>
+<h5 class="text-warning ms-3">Types</h5>
+<ul class="list-group my-3">
+    <li class="list-group-item " *ngFor="let type of types" [class.active]="type.id === shopParams.typeId"
+        [value]="type.id" (click)="onTypeSelected(type.id)">
+        {{ type.name }}
+    </li>
+
+</ul>
+
+**configure the pagination, go to shop.component.ts
+
+**in the getProducts method make the response in multiple and wrap it in curly brackets:
+
+getProducts() {
+    this.shopService.getProducts(this.shopParams).subscribe({
+      next: response => {
+        this.products = response.data;
+        this.shopParams.pageNumber = response.pageIndex;
+        this.shopParams.pageSize = response.pageSize;
+        this.totalCount = response.count;
+      },
+      error: error => console.log(error)
+    })
+  }
+
+**create another property for total count:
+
+totalCount = 0;
+
+**utilize into pagination component, go to shop.component.html:
+
+<pagination 
+    [boundaryLinks]="true" 
+    [totalItems]="totalCount"
+    [itemsPerPage]="shopParams.pageSize"
+    [maxSize]="10"
+    previousText="&lsaquo;" 
+    nextText="&rsaquo;"
+    firstText="&laquo;" 
+    lastText="&raquo;">
+</pagination>
+
+// Adding the pagination functionality part 3
+
+**go to shop.service.ts
+
+**go to getProducts:
+
+params = params.append('pageIndex', shopParams.pageNumber);
+params = params.append('pageSize', shopParams.pageSize);
+
+go to shop.component.ts:
+
+onPageChanged(event: any) {
+    if (this.shopParams.pageNumber !== event.page) {
+      this.shopParams.pageNumber = event.page;
+      this.getProducts();
+    }
+  }
+
+**go to shop.component.html:
+
+<pagination 
+    [boundaryLinks]="true" 
+    [totalItems]="totalCount"
+    [itemsPerPage]="shopParams.pageSize"
+    [maxSize]="10"
+    (pageChanged)="onPageChanged($event)"
+    previousText="&lsaquo;" 
+    nextText="&rsaquo;"
+    firstText="&laquo;" 
+    lastText="&raquo;">
+</pagination>
+
+// Adding a pagination header
+
+**go to shop.component.html:
+
+<header>
+    <span *ngIf="totalCount > 0">Showing 
+        <strong>
+            {{ (shopParams.pageNumber - 1) * shopParams.pageSize + 1 }} - 
+            {{ shopParams.pageNumber * shopParams.pageSize 
+                > totalCount
+                ? totalCount
+                : shopParams.pageNumber * shopParams.pageSize
+            }}
+        </strong> of <strong>{{ totalCount }}</strong> Results
+    </span>
+    <span *ngIf="totalCount === 0">There are <strong>0</strong> Results for this filter</span>
+</header>
+
+**if there is no result we also need to make the pagination go away:
+
+ <div class="d-flex justify-content-center" *ngIf="totalCount > 0">
+    <pagination 
+        [boundaryLinks]="true" 
+        [totalItems]="totalCount"
+        [itemsPerPage]="shopParams.pageSize"
+        [maxSize]="10"
+        (pageChanged)="onPageChanged($event)"
+        previousText="&lsaquo;" 
+        nextText="&rsaquo;"
+        firstText="&laquo;" 
+        lastText="&raquo;">
+    </pagination>
+</div>
+
+**just add if statement to the div in order to make the pagination go away whenever there is no result
+
+// Making the pagination component shared component
+
+**add another component:
+
+ng g c shared/paging-header --skip-tests
+
+**go to shared.module.ts and export the PagingHeaderComponent
+
+**go to the paging-header.component.html and paste the header:
+
+<header *ngIf="totalCount && pageNumber && pageSize">
+    <span *ngIf="totalCount > 0">Showing 
+        <strong>
+            {{ (pageNumber - 1) * pageSize + 1 }} - 
+            {{ pageNumber * pageSize 
+                > totalCount
+                ? totalCount
+                : pageNumber * pageSize
+            }}
+        </strong> of <strong>{{ totalCount }}</strong> Results
+    </span>
+    <span *ngIf="totalCount === 0">There are <strong>0</strong> Results for this filter</span>
+</header>
+
+**open the PagingHeaderComponent:
+
+@Input() pageNumber?: number;
+@Input() pageSize?: number;
+@Input() totalCount?: number;
+
+**go to the shop.component.html: 
+
+<app-paging-header
+    [totalCount]="totalCount"
+    [pageNumber]="shopParams.pageNumber"
+    [pageSize]="shopParams.pageSize"
+></app-paging-header>
+
+// Pagination and output properties
+
+**open terminal: ng g c shared/pager --skip-tests
+
+**go to shared.module.ts and export PagingHeaderComponent
+
+**open pager.component.ts and pager.component.html
+
+**move the pagination in shop.component.html into the pager.component.html:
+
+<pagination *ngIf="totalCount && pageSize" 
+    [boundaryLinks]="true" 
+    [totalItems]="totalCount"
+    [itemsPerPage]="pageSize"
+    [maxSize]="10"
+    (pageChanged)="onPagerChanged($event)"
+    previousText="&lsaquo;" 
+    nextText="&rsaquo;"
+    firstText="&laquo;" 
+    lastText="&raquo;">
+</pagination>
+
+**go to pager.component.ts:
+
+@Input() totalCount?: number;
+@Input() pageSize?: number;
+@Output() pageChanged = new EventEmitter<number>();
+
+onPagerChanged(event: any) {
+    this.pageChanged.emit(event.page);
+}
+
+**go to shop.component.html:
+
+<app-pager
+    [totalCount]="totalCount"
+    [pageSize]="shopParams.pageSize"
+    (pageChanged)="onPageChanged($event)"
+></app-pager>
+
+**change the shop.component.ts:
+
+onPageChanged(event: any) {
+    if (this.shopParams.pageNumber !== event) {
+      this.shopParams.pageNumber = event;
+      this.getProducts();
+    }
+  }
