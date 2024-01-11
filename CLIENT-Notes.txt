@@ -902,3 +902,181 @@ onPageChanged(event: any) {
       this.getProducts();
     }
   }
+
+// Creating additional component to route to
+
+**create a module for home:
+
+ng g m home
+
+**create a component for home:
+
+ng g c home/home --skip-tests --flat
+
+**create a component for product-details:
+
+ng g c shop/product-details --skip-tests
+
+// Creating routes
+
+**go to app-routing.module.ts and add routes:
+
+{path: '', component: HomeComponent},
+  {path: 'shop', component: ShopComponent},
+  {path: 'shop/:id', component: ProductDetailsComponent},
+  {path: '**', redirectTo: '', pathMatch:'full'}
+
+**go to home.module.ts and export the HomeComponent
+
+**then go to app.module.ts to import the HomeComponent
+
+// Setting up the nav links
+
+**go to nav-bar.component.html and replace the href tag with routerLink:
+
+<nav class="my-2 text-uppercase fs-4">
+  <a class="p-2 text-dark text-decoration-none" routerLink="/">Home</a>
+  <a class="p-2 text-dark text-decoration-none" routerLink="/shop">Shop</a>
+  <a class="p-2 text-dark text-decoration-none" routerLink="/contact">Contact</a>
+</nav>
+
+**to make this work import the RouterModule to the core.module.ts, after that you can also turn on the strong typing
+
+**create a link to our products, go to product-item.component.html and add routerLink to the view button
+
+**before adding routerlink make sure to import the RouterModule to the ShopModule
+
+<button routerLink="/shop/{{ product.id }}" class="btn btn-outline-secondary">View</button>
+
+// Making the links active
+
+**remove the styles in the a tag then use the routerLinkActive:
+
+<nav class="my-2 text-uppercase fs-4">
+  <a class="p-2" 
+  routerLink="/" 
+  routerLinkActive="active"
+  [routerLinkActiveOptions]="{exact: true}"
+  >Home</a>
+  <a class="p-2" routerLink="/shop" routerLinkActive="active">Shop</a>
+  <a class="p-2" routerLink="/contact" routerLinkActive="active">Contact</a>
+</nav>
+
+**go to the nav-bar.component.scss then add some scss code:
+
+a {
+    text-decoration: none;
+    color: #343a40;
+
+    &.active {
+        color: orange;
+    }
+}
+
+.logo {
+    cursor: pointer;
+}
+
+**add a class on the logo:
+
+<img class="logo" src="/assets/images/logo.png" alt="logo" style="max-height: 70px;" routerLink="/">
+
+// Getting an individual product
+
+**go to shop.service.ts and add another method:
+
+getProduct(id: number){
+  return this.http.get<Product>(this.baseUrl + 'products/' + id)
+}
+
+**go to product-details.component.ts and implement OnInit
+
+**add property product: product?: Product;
+
+**add method called loadProduct:
+
+export class ProductDetailsComponent implements OnInit {
+  product?: Product;
+
+  constructor(private shopService: ShopService, private activatedRoute: ActivatedRoute) { }
+
+  ngOnInit(): void {
+    this.loadProduct();
+  }
+
+  loadProduct() {
+    const id = this.activatedRoute.snapshot.paramMap.get('id')
+    if (id) this.shopService.getProduct(+id).subscribe({
+      next: product => this.product = product,
+      error: error => console.log(error)
+    })
+  }
+
+}
+
+**take note that in order to make the property int just add + sign before the property
+
+//Adding the product detail page
+
+**gp to product-details.component.html:
+
+<div class="row" *ngIf="product">
+    <div class="col-6">
+        <img src="{{ product.pictureUrl }}" alt="{{ product.name }}" class="w-100">
+    </div>
+    <div class="col-6 mt-5">
+        <h2>{{ product.name }}</h2>
+        <p>{{ product.price | currency }}</p>
+        <div class="d-flex justify-content-start align-items-center">
+            <i class="fa fa-minus-circle text-warning me-2" style="cursor: pointer; font-size: 2em;"></i>
+            <span class="font-weight-bold" style="font-size: 1.5em;">3</span>
+            <i class="fa fa-plus-circle text-warning ms-2" style="cursor: pointer; font-size: 2em;"></i>
+            <button class="btn btn-outline-secondary ms-4">Add to Cart</button>
+        </div>
+        <div class="row mt-4">
+            <h4>Description</h4>
+            <p>{{ product.description }}</p>
+        </div>
+    </div>
+</div>
+
+// Lazy loading angular modules
+
+**go to shop-routing.module.ts add routes:
+
+const routes: Routes = [
+  {path: '', component: ShopComponent},
+  {path: ':id', component: ProductDetailsComponent},
+]
+
+** import the RouterModule:
+
+RouterModule.forChild(routes)
+
+**export the RoutingModule
+
+**go to app-routing.module.ts:
+
+const routes: Routes = [
+  {path: '', component: HomeComponent},
+  {path: 'shop', loadChildren: () => import('./shop/shop.module').then(m => m.ShopModule)},
+  {path: '**', redirectTo: '', pathMatch:'full'}
+];
+
+**go to shop.module.ts and replace RouterModule with ShopRoutingModule and remove the ShopComponent from exports:
+
+@NgModule({
+  declarations: [
+    ShopComponent,
+    ProductItemComponent,
+    ProductDetailsComponent
+  ],
+  imports: [
+    CommonModule,
+    SharedModule,
+    ShopRoutingModule
+  ]
+})
+export class ShopModule { }
+
+**go to app.module.ts and remove ShopModule and remove unecessary usings
