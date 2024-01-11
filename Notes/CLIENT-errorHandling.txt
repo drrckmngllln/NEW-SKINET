@@ -1,0 +1,233 @@
+// Creating an error component for testing the error responses
+
+**create a component for errors:
+
+ng g c core/test-error --skip-tests
+
+**go to app-routing.module.ts and add routing:
+
+{path: 'test-error', component: TestErrorComponent},
+
+**go to nav-bar.component.html edit the contact to Error:
+<a class="p-2" routerLink="/test-error" routerLinkActive="active">Errors</a>
+
+**create a folder called environment and add a file called:
+environment.prod.ts with the code: 
+
+export const environment = {
+    production: true,
+    apiUrl: 'api/'
+};
+
+environment.ts with the code:
+
+export const environment = {
+    production: false,
+    apiUrl: 'https://localhost:5001/api/'
+};
+
+**then proceed to test-error.component.ts:
+
+export class TestErrorComponent {
+  baseUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) { }
+
+  get404Error(){
+    this.http.get(this.baseUrl + 'product/42').subscribe({
+      next: response => console.log(response),
+      error: error => console.log(error)
+    })
+  }
+
+  get500Error(){
+    this.http.get(this.baseUrl + 'buggy/servererror').subscribe({
+      next: response => console.log(response),
+      error: error => console.log(error)
+    })
+  }
+
+  get400Error(){
+    this.http.get(this.baseUrl + 'buggy/badrequest').subscribe({
+      next: response => console.log(response),
+      error: error => console.log(error)
+    })
+  }
+
+  get400ValidationError(){
+    this.http.get(this.baseUrl + 'products/fortytwo').subscribe({
+      next: response => console.log(response),
+      error: error => console.log(error)
+    })
+  }
+}
+
+
+**then create a template in test-error.component.html:
+
+<div class="container mt-5">
+    <button (click)="get500Error()" class="btn btn-outline-primary me-3">Test 500 Error</button>
+    <button (click)="get404Error()" class="btn btn-outline-primary me-3">Test 404 Error</button>
+    <button (click)="get400Error()" class="btn btn-outline-primary me-3">Test 400 Error</button>
+    <button (click)="get400ValidationError()" class="btn btn-outline-primary me-3">Test 400 Validation Error</button>
+</div>
+
+// Creating additional error components
+
+create a component for not-found and server-error:
+
+ng g c core/not-found --skip-tests
+
+ng g c core/server-error --skip-tests
+
+**go to app-routing.module.ts and add additional routes for the 2 component that was created:
+
+{path: 'not-found', component: NotFoundComponent},
+{path: 'server-error', component: ServerErrorComponent},
+
+*go to the not-found.component.html:
+
+<div class="container mt-5">
+    <h1>Not Found</h1>
+</div>
+
+**go to the server-error.component.html:
+
+<div class="container mt-5">
+    <h1>Server Error</h1>
+</div>
+
+// Using the http interceptor to catch errors
+
+**open terminal and create an interceptor:
+
+ng g interceptor core/interceptors/error --skip-tests
+
+**go to error.interceptor.ts: 
+
+@Injectable()
+export class ErrorInterceptor implements HttpInterceptor {
+
+  constructor(private router: Router) { }
+
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error) {
+          if (error.status === 404) {
+            this.router.navigateByUrl('/not-found');
+          };
+          if (error.status === 500) {
+            this.router.navigateByUrl('/server-error');
+          }
+        }
+        return throwError(() => new Error(error.message));
+      })
+    )
+  }
+}
+
+go to app.module.ts insert into provide:
+
+providers: [
+    {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true}
+  ],
+
+//Adding toast notifications
+
+**go to ngx toastr in google choose the github page
+
+**install the package open the terminal:
+
+npm install ngx-toastr@15
+
+**copy the stylesheet into the style array in the angular.json
+
+**paste it also to the style.scss:
+
+@import "node_modules/ngx-toastr/toastr.css";
+
+**go to app.module.ts and import:
+
+ToastrModule.forRoot({
+    positionClass: 'toast-bottom-right',
+    preventDuplicates: true
+})
+
+**go to error.interceptor.ts and inject it:
+
+@Injectable()
+export class ErrorInterceptor implements HttpInterceptor {
+
+  constructor(private router: Router, private toastr: ToastrService) { }
+
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error) {
+          if (error.status === 400){
+            this.toastr.error(error.error.message, error.status.toString())
+          }
+          if (error.status === 401){
+            this.toastr.error(error.error.message, error.status.toString())
+          }
+          if (error.status === 404) {
+            this.router.navigateByUrl('/not-found');
+          };
+          if (error.status === 500) {
+            this.router.navigateByUrl('/server-error');
+          }
+        }
+        return throwError(() => new Error(error.message));
+      })
+    )
+  }
+}
+
+// Handling validation errors
+
+**go to error.interceptor.ts:
+
+if (error) {
+    if (error.status === 400){
+    if (error.error.errors){
+        throw error.error;
+    }
+    else {
+        this.toastr.error(error.error.message, error.status.toString())
+    }
+    }
+    if (error.status === 401){
+    this.toastr.error(error.error.message, error.status.toString())
+    }
+    if (error.status === 404) {
+    this.router.navigateByUrl('/not-found');
+    };
+    if (error.status === 500) {
+    this.router.navigateByUrl('/server-error');
+    }
+}
+
+**go to test-error.component.ts and create another property:
+
+validationErrors: string[] = [];
+
+**then inject another parameters in the error log in get400ValidationError:
+
+get400ValidationError(){
+    this.http.get(this.baseUrl + 'products/fortytwo').subscribe({
+      next: response => console.log(response),
+      error: error => {
+        console.log(error),
+        this.validationErrors = error.errors;
+      }
+    })
+  }
+
+then go to test-error.component.html to display to the page:
+
+<div class="row mt-5" *ngIf="validationErrors.length > 0">
+    <ul class="text-danger">
+        <li *ngFor="let error of validationErrors">{{ error }}</li>
+    </ul>
+</div>
