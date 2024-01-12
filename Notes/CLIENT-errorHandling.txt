@@ -234,3 +234,38 @@ then go to test-error.component.html to display to the page:
 
 // Improving the internal server error component
 
+**go to error.interceptor.ts add some code into the error 500 if statement:
+
+if (error.status === 500) {
+    const navigationExtras: NavigationExtras = { state: { error: error.error } }
+    this.router.navigateByUrl('/server-error', navigationExtras);
+  }
+
+**go to server-error.component.ts and add some code:
+
+export class ServerErrorComponent {
+  error: any;
+
+  constructor(private router: Router) { 
+    const navigation = this.router.getCurrentNavigation();
+    this.error = navigation?.extras?.state?.['error'];
+  }
+}
+
+**and design the server-error.component.html:
+
+<div class="container mt-5">
+    <h4>Internal server-error - refreshing the page will make the error dissapear</h4>
+    <ng-container>
+        <h5 class="text-danger">Error: {{ error.message }}</h5>
+        <p class="font-weight-bold">this error comes from server - not angular</p>
+        <p>What to do next?</p>
+        <ol>
+            <li>Check the network tab in chrome dev tools</li>
+            <li>Reproduce the request in postman - if the same error occurs then definitely not angular!</li>
+        </ol>
+        <h5>Stack trace</h5>
+        <code class="mt-5" style="background-color: whitesmoke;">{{ error.details }}</code>
+    </ng-container>
+</div>
+
