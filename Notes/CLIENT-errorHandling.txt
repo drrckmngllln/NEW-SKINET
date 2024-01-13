@@ -269,3 +269,127 @@ export class ServerErrorComponent {
     </ng-container>
 </div>
 
+// Adding a section header
+
+**open terminal under the client folder and create a component:
+
+ng g c core/section-header --skip-tests
+
+**go to section-header.component.html and code the format of the section header:
+
+<section class="py-5" style="margin-top: 105px; background-color: #f5f5f5;">
+    <div class="container">
+        <div class="row d-flex align-items-center">
+            <div class="col-9">
+                <h1>Tittle goes here</h1>
+            </div>
+            <div class="col-3">
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Library</li>
+                    </ol>
+                </nav>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+**go to app.component.html but first export the component to the core.module.ts: SectionHeaderComponent
+and call the section-header:
+
+<app-section-header></app-section-header>
+
+// Adding breadcrumbs
+
+**install a third party tool for breadcrumbs called xng-breadcrumb
+
+**search xng-breadcrumb in the google:
+
+npm install xng-breadcrumb@9
+
+**take note that the angular 15 is not compatible with the latest breadcrumb npm so we need to install the version 9
+
+**according to the source:
+
+--for angular 12 use version 6.8.3
+--for angular 13, use xng-breadcrumb 7.2.0
+--for angular 14, use xng-breadcrumb 8.0.2
+--for angular 15, use xng-breadcrumb 9.0.0
+
+**import the BreadcrumbModule itno the core.module.ts
+
+**go to section-header.component.html and replace the nav tag with: <xng-breadcrumb>
+
+**to make sure that the home is displayed go to app-routing.module.ts:
+
+{path: '', component: HomeComponent, data: {breadcrumb: 'Home'}},
+
+**to fix the title case issue go to section-header.component.html:
+
+<xng-breadcrumb>
+    <ng-container *xngBreadcrumbItem="let breadcrumb">
+        {{ breadcrumb | titlecase }}
+    </ng-container>
+</xng-breadcrumb>
+
+// Using the breadcrumb ToastrService
+
+**go to shop-routing.module.ts:
+
+{path: ':id', component: ProductDetailsComponent, data: {breadcrumb: {alias: 'productDetails'}}},
+
+**go to product-details.component.ts and add another parameter to the constructor:
+
+constructor(private shopService: ShopService, private activatedRoute: ActivatedRoute, private bcService: BreadcrumbService) { }
+
+**add additional statement to the loadProduct Method:
+
+loadProduct() {
+    const id = this.activatedRoute.snapshot.paramMap.get('id')
+    if (id) this.shopService.getProduct(+id).subscribe({
+      next: product =>{ 
+        this.product = product;
+        this.bcService.set('@productDetails', product.name);
+      },
+      error: error => console.log(error)
+    })
+  }
+
+**create a styling into our breadcrumb trail
+
+**go to style.scss:
+
+label.xng-breadcrumb-trail {
+    color: orange;
+}
+
+// Setting the section header title from the breadcrumb
+
+**go to section-header.component.ts and create a constructor:
+
+constructor(public bcService: BreadcrumbService) { 
+   
+  }
+
+**go to section-header.component.html:
+
+<ng-container *ngIf="$any(bcService.breadcrumbs$ | async) as breadcrumbs">
+    <section *ngIf="breadcrumbs[breadcrumbs.length-1].label !== 'Home'" class="py-5" style="margin-top: 105px; background-color: #f5f5f5;">
+        <div class="container">
+            <div class="row d-flex align-items-center">
+                <div class="col-9">
+                    <h1>{{ breadcrumbs[breadcrumbs.length-1].label | titlecase }}</h1>
+                </div>
+                <div class="col-3">
+                    <xng-breadcrumb>
+                        <ng-container *xngBreadcrumbItem="let breadcrumb">
+                            {{ breadcrumb | titlecase }}
+                        </ng-container>
+                    </xng-breadcrumb>
+                </div>
+            </div>
+        </div>
+    </section>
+</ng-container>
