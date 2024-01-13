@@ -393,3 +393,190 @@ constructor(public bcService: BreadcrumbService) {
         </div>
     </section>
 </ng-container>
+
+
+// Styling the product items
+
+**go to app.component.html and remove the spacing:
+
+<div class="container">
+    <router-outlet></router-outlet>
+</div>
+
+**go to product-item.component.html and get the buttons overlayed on the image and make animation:
+
+<div class="card shadow-sm h-100" *ngIf="product">
+    
+    <div class="image position-relative" style="cursor: pointer;">
+        <img src="{{ product.pictureUrl }}" alt="{{ product.name }}" class="img-fluid bg-info">
+        <div class="d-flex align-items-center justify-content-center hover-overlay">
+            <button class="btn btn-primary me-2"><i class="fa fa-shopping-cart"></i></button>
+            <button routerLink="/shop/{{ product.id }}" class="btn btn-primary">View</button>
+        </div>
+    </div>
+
+    <div class="card-body d-flex flex-column">
+        <a href="" class="tex-decoration-none">
+            <h6 class="text-uppercase">
+                {{ product.name }}
+            </h6>
+        </a>
+        <span class="mb-2">{{ product.price | currency }}</span>
+    </div>
+</div>
+
+**after that go to product-item.component.scss and style and animate the page:
+
+.image :hover {
+    opacity: 1;
+    & button {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+.hover-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(255,255,255,0.5);
+    opacity: 0;
+    transition: all 0.5s;
+
+    & button {
+        z-index: 1000;
+        transition: all 0.5s;
+    }
+
+    & button:first-of-type {
+        transform: translateX(-20px);
+    }
+
+    & button:last-of-type {
+        transform: translateX(20px);
+    }
+}
+
+**go to product-details.component.html and adjust the price size:
+
+<p style="font-size: 2em;">{{ product.price | currency }}</p>
+
+// changing the bootstrap theme
+
+**visit bootswatch.com to choose options of you themes of your system
+
+**open the terminal and make sure you are in your client folder:
+
+npm install bootswatch
+
+**and open up angular.json and find the style:
+
+"node_modules/bootswatch/dist/united/bootstrap.min.css",
+
+**make sure to reset the app for the theme to take effect
+
+//Adding loading indicators
+
+**create a new interceptor:
+
+ng g interceptor core/interceptors/loading --skip-tests
+
+**open the created interceptor and add a fake delay:
+
+intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    this.busyService.busy();
+    return next.handle(request).pipe(
+      delay(1000),
+      finalize(() => this.busyService.idle())
+    )
+  }
+
+**open up app.module.ts to inject the interceptor under the providers:
+
+{provide: HTTP_INTERCEPTORS, useClass: LoadingInterceptor, multi: true}
+
+**go to google and search the ngx spinner and install the dependency
+
+**open up the terminal and install the dependency:
+
+npm install ngx-spinner@15
+
+**go to angular.json and add style in the styles array:
+
+"node_modules/ngx-spinner/animations/timer.css",
+
+**go to core.module.ts import and export the NgxSpinnerModule
+
+**go to app.component.html and add it to the top:
+
+<ngx-spinner type="timer">
+    <h3>Loading...</h3>
+</ngx-spinner>
+
+**create a service:
+
+ng g s core/services/busy --skip-tests
+
+**go to that service and write this code:
+
+export class BusyService {
+  busyRequestCount = 0;
+
+  constructor(private spinnerService: NgxSpinnerService) { }
+
+  busy(){
+    this.busyRequestCount++;
+    this.spinnerService.show(undefined, {
+      type: 'timer',
+      bdColor: 'rgba(255,255,255,0.7)',
+      color: '#333333'
+    });
+  }
+
+  idle(){
+    this.busyRequestCount--;
+    if (this.busyRequestCount <= 0){
+      this.busyRequestCount = 0;
+      this.spinnerService.hide();
+    }
+  }
+}
+
+**go back to the loading.interceptor.ts and write this code:
+
+export class LoadingInterceptor implements HttpInterceptor {
+
+  constructor(private busyService: BusyService) {}
+
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    this.busyService.busy();
+    return next.handle(request).pipe(
+      delay(1000),
+      finalize(() => this.busyService.idle())
+    )
+  }
+}
+
+**restart the angular app to take effect the changes
+
+//cleaning up loading issues
+
+**deal with section header, to to product-details.component.ts and add additional code to the constructor:
+
+ constructor(private shopService: ShopService, private activatedRoute: ActivatedRoute, private bcService: BreadcrumbService) { 
+    this.bcService.set('@productDetails', ' ')
+  }
+
+**go to shop.component.html and add additional condition:
+
+<div class="row" *ngIf="types.length > 0 && brands.length > 0">
+
+**add additional spacing to the section-header.component.html:
+
+<section *ngIf="breadcrumbs[breadcrumbs.length-1].label !== 'Home'" class="py-5 mb-3" style="margin-top: 105px; background-color: #f5f5f5;">
+
+// Adding the home page content
+
+**
