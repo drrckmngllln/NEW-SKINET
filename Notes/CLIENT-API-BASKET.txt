@@ -1,0 +1,22 @@
+// Setting up Redis
+
+**open up the nuget gallery and install StackExchange.Redis and install the version 2.6.86 and install it in the infrastructure folder
+
+**open up the ApplicationServiceExtensions and inject the code after the AddDBContext services:
+
+services.AddSingleton<IConnectionMultiplexer>(c =>
+    {
+        var options = ConfigurationOptions.Parse(config.GetConnectionString("Redis"));
+        return ConnectionMultiplexer.Connect(options);
+    });
+
+**open the appsettings.Development.json and add additional connection string:
+
+"ConnectionStrings": {
+    "DefaultConnection" : "Data Source=skinet.db",
+    "Redis": "localhost"
+  },
+
+Setting up the basket class
+
+

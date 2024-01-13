@@ -579,4 +579,52 @@ export class LoadingInterceptor implements HttpInterceptor {
 
 // Adding the home page content
 
-**
+**go to angular bootsrap and choose carousel as image
+
+**go to shared.module.ts and import and export the CarouselModule
+
+**go to home.module.ts and import the SharedModule
+
+**go to home.component.html:
+
+<carousel [isAnimated]="true">
+    <slide>
+        <img src="assets/images/hero1.jpg" alt="slide" style="display: block; width: 100%;">
+    </slide>
+    <slide>
+        <img src="assets/images/hero2.jpg" alt="slide" style="display: block; width: 100%;">
+    </slide>
+    <slide>
+        <img src="assets/images/hero3.jpg" alt="slide" style="display: block; width: 100%;">
+    </slide>
+</carousel>
+<section class="featured">
+    <div class="d-flex justify-content-center pt-4">
+        <h1>Welcome to the Shop!</h1>
+    </div>
+</section>
+
+**go to app.component.html:
+
+<ngx-spinner type="timer">
+    <h3>Loading...</h3>
+</ngx-spinner>
+<app-nav-bar></app-nav-bar>
+<app-section-header></app-section-header>
+
+<router-outlet></router-outlet>
+
+
+**go to home.component.scss:
+
+.featured {
+    height: 250px;
+
+}
+
+img {
+    object-fit: cover;
+    height: 600px;
+    width: 100%;
+}
+

@@ -183,3 +183,5 @@ C:\Users\MCNP-ISAP\Documents\GitHub\NEW-SKINET\API\obj\Debug\net7.0\refint\API.d
 C:\Users\MCNP-ISAP\Documents\GitHub\NEW-SKINET\API\obj\Debug\net7.0\API.pdb
 C:\Users\MCNP-ISAP\Documents\GitHub\NEW-SKINET\API\obj\Debug\net7.0\API.genruntimeconfig.cache
 C:\Users\MCNP-ISAP\Documents\GitHub\NEW-SKINET\API\obj\Debug\net7.0\ref\API.dll
+C:\Users\drrckmngllln\Documents\GitHub\NEW-SKINET\api\bin\Debug\net7.0\Pipelines.Sockets.Unofficial.dll
+C:\Users\drrckmngllln\Documents\GitHub\NEW-SKINET\api\bin\Debug\net7.0\StackExchange.Redis.dll
