@@ -19,4 +19,160 @@ services.AddSingleton<IConnectionMultiplexer>(c =>
 
 Setting up the basket class
 
+** go to core and create a class under entities called CustomerBasket
 
+public class CustometBasket
+    {
+        public CustometBasket()
+        {
+        }
+
+        public CustometBasket(string id)
+        {
+            Id = id;
+        }
+
+        public string Id { get; set; }
+        public List<BasketItem> Items { get; set; } = new List<BasketItem>();
+        
+    }
+
+// Creating a basket repository interface
+
+**go to Core/interface Create a New interface called IBasketRepository:
+
+public interface IBasketRepository
+    {
+        Task<CustometBasket> GetBasketAsync(string basketId);
+        Task<CustometBasket> UpdateBasketAsync(CustometBasket basket);
+        Task<bool> DeleteBasketAsync(string basketId);
+    }
+
+**go to infrastructure/data and create a new class called BasketRepository and implement the IBasketRepository interface:
+
+public class BasketRepository : IBasketRepository
+    {
+        public Task<bool> DeleteBasketAsync(string basketId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CustometBasket> GetBasketAsync(string basketId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CustometBasket> UpdateBasketAsync(CustometBasket basket)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+**after that go to ApplicationServiceExtensions add another service:
+
+services.AddScoped<IBasketRepository, BasketRepository>();
+
+// Implementing the basket repository
+
+**go to BasketRepository and code the implemented method:
+
+public class BasketRepository : IBasketRepository
+    {
+        private readonly IDatabase _database;
+        public BasketRepository(IConnectionMultiplexer redis)
+        {
+            _database = redis.GetDatabase();
+        }
+
+        public async Task<bool> DeleteBasketAsync(string basketId)
+        {
+            return await _database.KeyDeleteAsync(basketId);
+        }
+
+        public async Task<CustometBasket> GetBasketAsync(string basketId)
+        {
+            var data = await _database.StringGetAsync(basketId);
+
+            return data.IsNullOrEmpty ? null : JsonSerializer.Deserialize<CustometBasket>(data);
+        }
+
+        public async Task<CustometBasket> UpdateBasketAsync(CustometBasket basket)
+        {
+            var created = await _database.StringSetAsync(basket.Id, JsonSerializer.Serialize(basket), TimeSpan.FromDays(30));
+
+            if (!created) return null;
+
+            return await GetBasketAsync(basket.Id);
+        }
+    }
+
+// Adding the basket controller
+
+**go to controllers and create a new class called BasketController:
+
+public class BasketController : BaseApiController
+    {
+        private readonly IBasketRepository _basketRepository;
+        public BasketController(IBasketRepository basketRepository)
+        {
+            _basketRepository = basketRepository;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<CustomerBasket>> GetBasketById(string id)
+        {
+            var basket = await _basketRepository.GetBasketAsync(id);
+
+            return Ok(basket ?? new CustomerBasket(id));
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<CustomerBasket>> UpdateBasket(CustomerBasket basket)
+        {
+            var updatatedBasket = await _basketRepository.UpdateBasketAsync(basket);
+
+            return Ok(updatatedBasket);
+        }
+
+        [HttpDelete]
+        public async Task DeleteBasketAsync(string id)
+        {
+            await _basketRepository.DeleteBasketAsync(id);
+        }
+    }
+
+// Installing redis with docker
+
+**install docker in windows
+
+**copy the docker-compose.yml in the solution in the student assets folder
+
+**to run the docker:
+
+docker-compose up --detach
+
+//installing redis on windows
+
+**to install redis:
+
+choco install redis-64 --version=3.0.503 -force
+
+open cmd:
+
+redis-server
+
+**this command will start the server
+
+**open another cmd:
+
+redis-cli
+
+**if you ping it if it returns pong then it is functioning properly
+
+//testing the basket functionality
+
+**open up redis commander: 127.0.0.1:8081
+username: root
+password: secret
+
+**just test the basket in the postman with the folder section 13

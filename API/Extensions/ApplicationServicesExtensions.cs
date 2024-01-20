@@ -31,6 +31,8 @@ namespace API.Extensions
                 return ConnectionMultiplexer.Connect(options);
             });
 
+            services.AddScoped<IBasketRepository, BasketRepository>();
+
             services.AddScoped<IProductRepository, ProductRepository>();
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
