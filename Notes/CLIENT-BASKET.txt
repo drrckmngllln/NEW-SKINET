@@ -1,0 +1,67 @@
+// Creating the basket module
+
+**open cli:
+
+**create a basket module:
+
+ng g m basket
+
+**for basket routing:
+
+ng g m basket/basket-routing --flat
+
+**create a component:
+
+ng g c basket/basket --flat --skip-tests
+
+**create a service:
+
+ng g s basket/basket --skip-tests
+
+**go to app-routing.module.ts and add route:
+
+{path: 'basket', loadChildren: () => import('./basket/basket.module').then(m => m.BasketModule)},
+
+**go to basket-touting.module.ts:
+
+const routes: Routes = [
+  {path: '', component: BasketComponent}
+]
+
+@NgModule({
+  declarations: [],
+  imports: [
+    RouterModule.forChild(routes)
+  ],
+  exports: [
+    RouterModule
+  ]
+})
+export class BasketRoutingModule { }
+
+**go to basket.module.ts and import the BasketRoutingModule:
+
+@NgModule({
+  declarations: [
+    BasketComponent
+  ],
+  imports: [
+    CommonModule,
+    BasketRoutingModule
+  ]
+})
+export class BasketModule { }
+
+**go to nav-bar.component.html:
+
+<a routerLink="/basket" class="position-relative">
+
+**test the page
+
+//creating the basket types
+
+**create a basket in the postman
+
+**copy the json file in the postman go to json to ts and convert the json file to ts
+
+**create a new file in the model called
