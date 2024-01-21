@@ -64,4 +64,131 @@ export class BasketModule { }
 
 **copy the json file in the postman go to json to ts and convert the json file to ts
 
-**create a new file in the model called
+**create a new file in the model called basket.ts:
+
+import * as cuid from "cuid"
+
+export interface BasketItem {
+    id: number
+    productName: string
+    price: number
+    quantity: number
+    pictureUrl: string
+    brand: string
+    type: string
+}
+
+export interface Basket {
+    id: string
+    items: BasketItem[]
+}
+
+export class Basket implements Basket {
+    id = cuid();
+    items: BasketItem[] = [];
+}
+
+// Basket service methods
+
+**go to basket service and enter the basket functionality:
+
+export class BasketService {
+  baseUrl = environment.apiUrl;
+  private basketSource = new BehaviorSubject<Basket | null>(null);
+  basketSource$ = this.basketSource.asObservable();
+
+  constructor(private http: HttpClient) { }
+
+  getBasket(id: string) {
+    return this.http.get<Basket>(this.baseUrl + 'basket?id=' + id).subscribe({
+      next: basket => this.basketSource.next(basket)
+    })
+  }
+
+  setBasket(basket: Basket) {
+    return this.http.post<Basket>(this.baseUrl + 'basket', basket).subscribe({
+      next: basket => this.basketSource.next(basket)
+    })
+  }
+
+  getCurrentBasketValue() {
+    return this.basketSource.value;
+  }
+}
+
+//Adding an item to the basket service method
+
+**create a crud operations in the basket.service.ts:
+
+addItemToBasket(item: Product, quantity = 1) {
+    const itemToAdd = this.mapProductItemToBasketItem(item); 
+    const basket = this.getCurrentBasketValue() ?? this.createBasket();
+    basket.items = this.addOrUpdateItem(basket.items, itemToAdd, quantity);
+    this.setBasket(basket);
+  }
+
+  private addOrUpdateItem(items: BasketItem[], itemToAdd: BasketItem, quantity: number): BasketItem[] {
+    const item = items.find(x => x.id === itemToAdd.id);
+    if (item) item.quantity += quantity;
+    else{
+      itemToAdd.quantity = quantity;
+      items.push(itemToAdd);
+    }
+    return items;
+  }
+
+  private createBasket(): Basket {
+    const basket = new Basket();
+    localStorage.setItem('basket_id', basket.id);
+    return basket;
+  }
+
+  private mapProductItemToBasketItem(item: Product) : BasketItem {
+    return {
+      id: item.id,
+      productName: item.name,
+      price: item.price,
+      quantity: 0,
+      pictureUrl: item.pictureUrl,
+      brand: item.productBrand,
+      type: item.productType
+    }
+  }
+
+// Adding the add item to basket in the component method
+
+**go to product-item.component.ts:
+
+export class ProductItemComponent {
+  @Input() product?: Product;
+
+  constructor(private basketService: BasketService) { }
+
+  addItemToBasket() {
+    this.product && this.basketService.addItemToBasket(this.product);
+  }
+
+**go to product-item.component.html and add a click event
+
+<button (click)="addItemToBasket()" class="btn btn-primary me-2"><i class="fa fa-shopping-cart"></i></button>
+
+**try to see the redis commander: localhost:8081 and see the saved database
+
+// Persisting the basket on startup
+
+**go to app.component.ts and use the component to load the localStorage:
+
+export class AppComponent implements OnInit {
+  title = 'Skinet';
+
+  constructor(private basketService: BasketService) { }
+
+  ngOnInit(): void {
+    const basketId = localStorage.getItem('basket_id');
+    if (basketId) this.basketService.getBasket(basketId);
+  }
+
+}
+
+// Displaying the basket item count in the nav bar
+
