@@ -5,5 +5,7 @@ export interface Product {
     price: number;
     pictureUrl: string;
     productType: string;
-    productBrand: string;
+    productBrand: string; 
 }
+
+export class Product implements Product {}

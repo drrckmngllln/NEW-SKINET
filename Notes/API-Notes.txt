@@ -1,3 +1,5 @@
+dotnet new webapi -n API --framework net7.0
+
 creating class library
 
 dotnet new classlib -n Core

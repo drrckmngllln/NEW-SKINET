@@ -16,7 +16,7 @@
         <a routerLink="/basket" class="position-relative">
             <i class="fa fa-shopping-cart fa-2x me-5 text-dark"></i>
             <div class="cart-no" *ngIf="(basketService.basketSource$ | async) as basket">
-              {{ basket.items.length }}
+              {{ getCount(basket.items) }}
             </div>
         </a>
 
