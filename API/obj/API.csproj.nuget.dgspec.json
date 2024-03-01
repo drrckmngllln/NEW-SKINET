@@ -1,36 +1,42 @@
 {
   "format": 1,
   "restore": {
-    "/home/ict-server/Documents/GitHub/NEW-SKINET/API/API.csproj": {}
+    "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\API\\API.csproj": {}
   },
   "projects": {
-    "/home/ict-server/Documents/GitHub/NEW-SKINET/API/API.csproj": {
+    "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\API\\API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ict-server/Documents/GitHub/NEW-SKINET/API/API.csproj",
+        "projectUniqueName": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\API\\API.csproj",
         "projectName": "API",
-        "projectPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/API/API.csproj",
-        "packagesPath": "/home/ict-server/.nuget/packages/",
-        "outputPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/API/obj/",
+        "projectPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\API\\API.csproj",
+        "packagesPath": "C:\\Users\\drrckmngllln\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\API\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/ict-server/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\drrckmngllln\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net7.0": {
             "targetAlias": "net7.0",
             "projectReferences": {
-              "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/Core.csproj": {
-                "projectPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/Core.csproj"
+              "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\Core.csproj": {
+                "projectPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\Core.csproj"
               },
-              "/home/ict-server/Documents/GitHub/NEW-SKINET/Infrastructure/Infrastructure.csproj": {
-                "projectPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/Infrastructure/Infrastructure.csproj"
+              "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Infrastructure\\Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Infrastructure\\Infrastructure.csproj"
               }
             }
           }
@@ -39,11 +45,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -95,15 +96,19 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[7.0.16, 7.0.16]"
+              "version": "[7.0.15, 7.0.15]"
             },
             {
-              "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[7.0.16, 7.0.16]"
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[7.0.15, 7.0.15]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
-              "version": "[7.0.16, 7.0.16]"
+              "version": "[7.0.15, 7.0.15]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[7.0.15, 7.0.15]"
             }
           ],
           "frameworkReferences": {
@@ -114,26 +119,32 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.200/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/Core.csproj": {
+    "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/Core.csproj",
+        "projectUniqueName": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\Core.csproj",
         "projectName": "Core",
-        "projectPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/Core.csproj",
-        "packagesPath": "/home/ict-server/.nuget/packages/",
-        "outputPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/obj/",
+        "projectPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\Core.csproj",
+        "packagesPath": "C:\\Users\\drrckmngllln\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/ict-server/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\drrckmngllln\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -146,11 +157,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -176,11 +182,15 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[7.0.16, 7.0.16]"
+              "version": "[7.0.15, 7.0.15]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
-              "version": "[7.0.16, 7.0.16]"
+              "version": "[7.0.15, 7.0.15]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[7.0.15, 7.0.15]"
             }
           ],
           "frameworkReferences": {
@@ -188,34 +198,40 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.200/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "/home/ict-server/Documents/GitHub/NEW-SKINET/Infrastructure/Infrastructure.csproj": {
+    "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Infrastructure\\Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/ict-server/Documents/GitHub/NEW-SKINET/Infrastructure/Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Infrastructure\\Infrastructure.csproj",
         "projectName": "Infrastructure",
-        "projectPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/Infrastructure/Infrastructure.csproj",
-        "packagesPath": "/home/ict-server/.nuget/packages/",
-        "outputPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/Infrastructure/obj/",
+        "projectPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Infrastructure\\Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\drrckmngllln\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/home/ict-server/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\drrckmngllln\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net7.0": {
             "targetAlias": "net7.0",
             "projectReferences": {
-              "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/Core.csproj": {
-                "projectPath": "/home/ict-server/Documents/GitHub/NEW-SKINET/Core/Core.csproj"
+              "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\Core.csproj": {
+                "projectPath": "C:\\Users\\drrckmngllln\\Documents\\GitHub\\NEW-SKINET\\Core\\Core.csproj"
               }
             }
           }
@@ -224,11 +240,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -274,11 +285,15 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[7.0.16, 7.0.16]"
+              "version": "[7.0.15, 7.0.15]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
-              "version": "[7.0.16, 7.0.16]"
+              "version": "[7.0.15, 7.0.15]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[7.0.15, 7.0.15]"
             }
           ],
           "frameworkReferences": {
@@ -286,7 +301,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.200/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }
